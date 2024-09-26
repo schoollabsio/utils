@@ -1,6 +1,6 @@
-import ContextBuilder from "./context";
+import Context from "./context";
 
-describe("ContextBuilder", () => {
+describe("Context", () => {
   it("should initialize and retrieve various services correctly", () => {
     class MyService {
       constructor(
@@ -24,47 +24,18 @@ describe("ContextBuilder", () => {
       };
     }
 
-    const builder = new ContextBuilder<ExampleContext>();
+    const ctx = new Context<ExampleContext>({
+      fetch: () => fetch,
+      example: (ctx) => new MyService(ctx),
+      settings: () => ({ something: 5 }),
+    });
 
-    builder.add("fetch", () => fetch);
-    builder.add("example", (ctx) => new MyService(ctx));
-    builder.add("settings", () => ({ something: 5 }));
-
-    const context = builder.init();
+    const context = ctx.create();
 
     expect(context.fetch).toBe(fetch);
     expect(context.example).toBeInstanceOf(MyService);
     expect(context.settings.something).toBe(5);
 
     expect(context.example.getSomething()).toBe(5);
-  });
-
-  it("should throw an error when trying to fetch a service that was never added", () => {
-    interface ExampleContext {
-      fetch: typeof fetch;
-      example: any;
-    }
-
-    const builder = new ContextBuilder<ExampleContext>();
-
-    builder.add("fetch", () => fetch);
-
-    const context = builder.init();
-
-    expect(() => context.example).toThrow();
-  });
-
-  it("should throw an error when trying to add a duplicate token", () => {
-    interface ExampleContext {
-      fetch: typeof fetch;
-    }
-
-    const builder = new ContextBuilder<ExampleContext>();
-
-    builder.add("fetch", () => fetch);
-
-    expect(() => builder.add("fetch", () => fetch)).toThrowError(
-      "Cannot overwrite existing token: fetch"
-    );
   });
 });

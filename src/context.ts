@@ -1,16 +1,10 @@
-class ContextBuilder<T> {
-  constructor(private builders: Map<any, any> = new Map()) {}
+type ContextProvider<T> = (ctx: T) => T[keyof T];
 
-  add(token: keyof T, component: (ctx: T) => T[keyof T]): ContextBuilder<T> {
-    if (this.builders.has(token)) {
-      throw new Error(`Cannot overwrite existing token: ${String(token)}`);
-    }
-    this.builders.set(token, component);
-    return this;
-  }
+class Context<T extends Object> {
+  constructor(private providers: { [K in keyof T]: ContextProvider<T> }) {}
 
-  init(): T {
-    const f = Array.from(this.builders.entries()).reduce((acc, [token, component]) => {
+  create(): T {
+    const f = Array.from(Object.entries(this.providers)).reduce((acc, [token, component]) => {
       Object.defineProperty(acc, token, {
         get: () => component(acc),
         enumerable: true,
@@ -22,4 +16,4 @@ class ContextBuilder<T> {
   }
 }
 
-export default ContextBuilder;
+export default Context;
