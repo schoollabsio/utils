@@ -22,6 +22,11 @@ jobs:
           git config --global user.name "School Labs Bot"
           git config --global user.email "bot@schoollabs.io"
 
+      - name: Setup ssh key
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/id_rsa
+
       - name: Checkout release branch
         run: |
           git checkout -b release/$(./version.sh)
